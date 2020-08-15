@@ -1,7 +1,7 @@
 /**
  *  Z-Wave Association
  *  Author: Eric Maycock (erocm123)
- *  Date: 2019-10-10
+ *  Date: 2020-04-16
  *
  *  Copyright 2019 Eric Maycock / Inovelli
  *
@@ -14,18 +14,21 @@
  *  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
  *  for the specific language governing permissions and limitations under the License.
  *
+ *  2020-04-16: Adding option to reset association variables. Use this if you need to remove the source device from
+ *              your network (to OTA update it) and add it back to the association later.
+ *
  *  2019-10-10: Changing name of switch capability to switch / dimmer / bulb
  *
  */
  
 definition(
     name: "Z-Wave Association",
-    namespace: "erocm123/Z-WaveAT",
+    namespace: "InovelliUSA/Z-WaveAT",
     author: "Eric Maycock",
     description: "An app to create direct associations between two Z-Wave devices.",
     category: "My Apps",
 
-    parent: "erocm123/Z-WaveAT:Z-Wave Association Tool",
+    parent: "InovelliUSA/Z-WaveAT:Z-Wave Association Tool",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png",
     iconX3Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png")
@@ -55,6 +58,11 @@ def updated() {
 def initialize() {
     if (!overrideLabel) {
         app.updateLabel(defaultLabel())
+    }
+    
+    if (resetAssoc == true) {
+        state.previousNodes = []
+        app.updateSetting("resetAssoc", false)
     }
 
     def addNodes = ((settings."d${settings.dCapability}"?.deviceNetworkId)?:[]) - (state.previousNodes? state.previousNodes : [])
@@ -127,6 +135,9 @@ def associationInputs() {
         //if (multiChannel) {
         //    input "endpoint", "number", title: "Endpoint ID", required: multiChannel
         //}
+    }
+    section("Advanced") {
+        input "resetAssoc", "bool", title: "Reset the association variables (use only if you are changing the source device in this association)", multiple: false, required: false
     }
 }
 
